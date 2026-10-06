@@ -1,0 +1,5 @@
+dist
+dist-ssr
+node_modules
+server/database/migrations
+package-lock.json

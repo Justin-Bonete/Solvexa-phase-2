@@ -1,0 +1,11 @@
+node_modules
+dist
+dist-ssr
+.env
+.env.local
+*.log
+coverage
+playwright-report
+test-results
+.vercel
+.data

@@ -1,0 +1,24 @@
+[1mdiff --git a/.env.example b/.env.example[m
+[1mindex 5a2b080..ae7bf51 100644[m
+[1m--- a/.env.example[m
+[1m+++ b/.env.example[m
+[36m@@ -2,7 +2,7 @@[m
+ #   node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"      -> SESSION_SECRET[m
+ #   node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"         -> TOTP_ENCRYPTION_KEY[m
+ NODE_ENV=development[m
+[31m-DATABASE_URL=postgres://user:password@localhost:5432/solvexa[m
+[32m+[m[32mDATABASE_URL=postgresql://neondb_owner:npg_wxcCkeVQ31yT@ep-calm-cherry-b4o6fg5e-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require[m
+ APP_URL=http://localhost:5173[m
+ SESSION_SECRET=[m
+ TOTP_ENCRYPTION_KEY=[m
+[36m@@ -17,8 +17,8 @@[m [mREQUIRE_TURNSTILE=false[m
+ TURNSTILE_SECRET=[m
+ [m
+ # Seed only (npm run db:seed). No default admin credentials exist.[m
+[31m-ADMIN_EMAIL=[m
+[31m-ADMIN_PASSWORD=[m
+[32m+[m[32mADMIN_EMAIL=bonetejustin29@gmail.com[m
+[32m+[m[32mADMIN_PASSWORD=Bonete-@102904!.[m
+ [m
+ # Client build flags[m
+ VITE_SITE_URL=http://localhost:5173[m
