@@ -12,13 +12,15 @@ export const privacy: LegalDoc = {
       body: [
         'When you create an account I collect your name, email address, and optionally your organization. Your password is stored only as a salted Argon2id hash.',
         'To keep accounts secure I also store session records and security logs, which use hashed or abbreviated technical identifiers rather than raw IP addresses.',
-        'When contact and assessment forms are released, the information you submit through them will be used to respond to your request.',
+        'When you send a contact or assessment form I collect what you type (such as your name, email, organization, and project details) and any files you attach. I also store a hashed form of your network address to detect abuse and prevent duplicate or automated submissions.',
+        'Please do not put passwords, API keys, or server credentials in any form or attachment.',
       ],
     },
     {
       heading: 'Cookies',
       body: [
         'The site uses strictly necessary cookies for sign-in and security (session and CSRF protection). It does not use advertising or analytics cookies.',
+        'If a bot check is enabled on the forms, it is provided by Cloudflare Turnstile, which loads from Cloudflare and processes some browser information to tell people from automated programs.',
       ],
     },
     {
@@ -31,7 +33,7 @@ export const privacy: LegalDoc = {
     {
       heading: 'Service providers',
       body: [
-        'The site relies on hosting, database, and email delivery providers to operate. They process data only to provide those services.',
+        'The site relies on hosting, database, file storage, and email delivery providers to operate. They process data only to provide those services. Uploaded files are stored privately and are visible only to me.',
       ],
     },
     {

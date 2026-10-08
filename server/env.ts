@@ -20,6 +20,11 @@ const schema = z.object({
   RESEND_API_KEY: z.string().optional(),
   TURNSTILE_SECRET: z.string().optional(),
   REQUIRE_TURNSTILE: bool,
+  /** local = dev disk. blob = private Vercel Blob store (required in production; serverless disks are ephemeral). */
+  STORAGE_DRIVER: z.enum(['local', 'blob', 'none']).default('local'),
+  /** TESTING ONLY. Lets a deployed (production-mode) preview use console email. Never set this for real clients. */
+  ALLOW_DEV_SERVICES: bool,
+  STORAGE_DIR: z.string().default('.data/uploads'),
   PORT: z.coerce.number().default(3001),
 });
 
@@ -33,8 +38,15 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
   }
   const e = parsed.data;
   const isProd = e.NODE_ENV === 'production';
-  if (isProd && e.MAIL_TRANSPORT === 'console') {
-    throw new Error('MAIL_TRANSPORT=console is dev-only and refused in production. Use resend.');
+  if (isProd && e.MAIL_TRANSPORT === 'console' && !e.ALLOW_DEV_SERVICES) {
+    throw new Error(
+      'MAIL_TRANSPORT=console is dev-only and refused in production. Use resend (or set ALLOW_DEV_SERVICES=true for a testing-only deploy).',
+    );
+  }
+  if (isProd && e.STORAGE_DRIVER === 'local') {
+    throw new Error(
+      'STORAGE_DRIVER=local is dev-only and refused in production. Use blob (a private Vercel Blob store).',
+    );
   }
   if (e.MAIL_TRANSPORT === 'resend' && !e.RESEND_API_KEY)
     throw new Error('RESEND_API_KEY is required for MAIL_TRANSPORT=resend');

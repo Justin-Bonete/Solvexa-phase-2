@@ -19,6 +19,11 @@ export const appRoutes: AppRoute[] = [
   { path: '/faq', load: () => import('@/pages/Faq') },
   { path: '/privacy', load: () => import('@/pages/Privacy') },
   { path: '/terms', load: () => import('@/pages/Terms') },
+  { path: '/contact', load: () => import('@/pages/Contact') },
+  { path: '/contact/new-system', load: () => import('@/pages/ContactNew') },
+  { path: '/contact/existing-system', load: () => import('@/pages/ContactExisting') },
+  { path: '/contact/idea', load: () => import('@/pages/ContactIdea') },
+  { path: '/assessment', load: () => import('@/pages/Assessment') },
   { path: '/login', load: () => import('@/pages/Login') },
   { path: '/register', load: () => import('@/pages/Register') },
   { path: '/forgot-password', load: () => import('@/pages/ForgotPassword') },
@@ -27,6 +32,8 @@ export const appRoutes: AppRoute[] = [
   { path: '/mfa', load: () => import('@/pages/Mfa') },
   { path: '/portal', load: () => import('@/pages/Portal'), guard: 'client' },
   { path: '/admin', load: () => import('@/pages/Admin'), guard: 'admin' },
+  { path: '/admin/inquiries', load: () => import('@/pages/AdminInbox'), guard: 'admin' },
+  { path: '/admin/inquiries/:id', load: () => import('@/pages/AdminInquiry'), guard: 'admin' },
   ...(import.meta.env?.DEV ? [{ path: '/_ui', load: () => import('@/pages/UiKit') }] : []),
 ];
 export const notFoundLoad: Loader = () => import('@/pages/NotFound');

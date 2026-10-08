@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { Badge, Container, EmptyState, ErrorState, Skeleton } from '@/components/ui/Feedback';
+import { AdminNav } from '@/features/admin/shared';
 
 type U = { id: string; email: string; fullName: string; status: string; role: string; createdAt: string };
 type L = { id: string; action: string; actorId: string | null; createdAt: string };
@@ -18,6 +19,7 @@ export default function Admin() {
   });
   return (
     <Container className="space-y-12 py-12">
+      <AdminNav />
       <div>
         <h1 className="text-h1">Admin</h1>
         <p className="mt-2 text-muted">

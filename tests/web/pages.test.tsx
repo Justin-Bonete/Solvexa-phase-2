@@ -43,16 +43,17 @@ describe('Home', () => {
       expect(document.querySelector(`a[href="${href}"]`), href).not.toBeNull();
     }
   });
-  it('disables CTAs that need unreleased features, with the reason visible, and never renders them as links', () => {
+  it('links CTAs whose pages exist and disables the one that does not, with the reason visible', () => {
     at(<Home />);
-    const start = screen.getAllByRole('button', { name: 'Start a Project' })[0] as HTMLElement;
-    expect(start).toHaveAttribute('aria-disabled', 'true');
-    expect(start).toHaveAccessibleDescription(/contact hub/i);
-    expect(screen.queryByRole('link', { name: 'Start a Project' })).toBeNull();
-    expect(screen.getByRole('button', { name: 'Request System Assessment' })).toHaveAttribute(
-      'aria-disabled',
-      'true',
+    expect(screen.getAllByRole('link', { name: 'Start a Project' })[0]).toHaveAttribute('href', '/contact');
+    expect(screen.getAllByRole('link', { name: 'Request System Assessment' })[0]).toHaveAttribute(
+      'href',
+      '/assessment',
     );
+    const support = screen.getByRole('button', { name: 'Get Technical Support' });
+    expect(support).toHaveAttribute('aria-disabled', 'true');
+    expect(support).toHaveAccessibleDescription(/support area/i);
+    expect(screen.queryByRole('link', { name: 'Get Technical Support' })).toBeNull();
   });
   it('renders sections in the specified order', () => {
     const { container } = at(<Home />);
@@ -198,10 +199,7 @@ describe('Project detail', () => {
       within(container.querySelector('#results') as HTMLElement).getByText('Not yet measured.'),
     ).toBeInTheDocument();
     expect(screen.getAllByText('Not yet provided.').length).toBeGreaterThan(3);
-    expect(screen.getByRole('button', { name: 'Need Something Similar?' })).toHaveAttribute(
-      'aria-disabled',
-      'true',
-    );
+    expect(screen.getByRole('link', { name: 'Need Something Similar?' })).toHaveAttribute('href', '/contact');
   });
   it('shows the not-found page for an unknown project', () => {
     route('does-not-exist');

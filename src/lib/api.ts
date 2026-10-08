@@ -17,9 +17,17 @@ export const setCsrfToken = (t: string | null) => {
   csrfToken = t;
 };
 
-async function request<T>(method: string, url: string, body?: unknown, retried = false): Promise<T> {
-  const headers: Record<string, string> = { Accept: 'application/json' };
-  if (body !== undefined) headers['Content-Type'] = 'application/json';
+type Opts = { headers?: Record<string, string>; form?: FormData };
+
+async function request<T>(
+  method: string,
+  url: string,
+  body?: unknown,
+  opts: Opts = {},
+  retried = false,
+): Promise<T> {
+  const headers: Record<string, string> = { Accept: 'application/json', ...(opts.headers ?? {}) };
+  if (body !== undefined && !opts.form) headers['Content-Type'] = 'application/json';
   if (method !== 'GET') {
     if (!csrfToken) csrfToken = (await request<{ csrfToken: string }>('GET', '/auth/csrf')).csrfToken;
     headers['X-CSRF-Token'] = csrfToken;
@@ -30,7 +38,8 @@ async function request<T>(method: string, url: string, body?: unknown, retried =
       method,
       headers,
       credentials: 'same-origin',
-      ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+      // For FormData the browser sets the multipart boundary itself, so no Content-Type is set above.
+      ...(opts.form ? { body: opts.form } : body !== undefined ? { body: JSON.stringify(body) } : {}),
     });
   } catch {
     throw new ApiError(0, 'NETWORK', 'Could not reach the server. Check your connection and try again.');
@@ -42,7 +51,7 @@ async function request<T>(method: string, url: string, body?: unknown, retried =
   }
   if (res.status === 403 && data.code === 'CSRF_INVALID' && !retried) {
     csrfToken = null;
-    return request<T>(method, url, body, true);
+    return request<T>(method, url, body, opts, true);
   }
   const retry = Number(res.headers.get('Retry-After')) || undefined;
   throw new ApiError(
@@ -56,5 +65,12 @@ async function request<T>(method: string, url: string, body?: unknown, retried =
 
 export const api = {
   get: <T>(url: string) => request<T>('GET', url),
-  post: <T>(url: string, body?: unknown) => request<T>('POST', url, body ?? {}),
+  post: <T>(url: string, body?: unknown, opts?: Opts) => request<T>('POST', url, body ?? {}, opts),
+  patch: <T>(url: string, body: unknown) => request<T>('PATCH', url, body),
+  del: <T>(url: string) => request<T>('DELETE', url),
+  upload: <T>(url: string, file: File, headers: Record<string, string>) => {
+    const form = new FormData();
+    form.append('file', file);
+    return request<T>('POST', url, undefined, { headers, form });
+  },
 };

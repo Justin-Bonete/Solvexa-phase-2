@@ -3,6 +3,7 @@ import {
   useId,
   type InputHTMLAttributes,
   type ReactNode,
+  type SelectHTMLAttributes,
   type TextareaHTMLAttributes,
 } from 'react';
 
@@ -103,3 +104,58 @@ export const Checkbox = forwardRef<
     </div>
   );
 });
+
+export const Select = forwardRef<
+  HTMLSelectElement,
+  SelectHTMLAttributes<HTMLSelectElement> & { invalid?: boolean; describedBy?: string }
+>(function Select({ invalid, describedBy, className = '', children, ...p }, ref) {
+  return (
+    <select
+      ref={ref}
+      aria-invalid={invalid || undefined}
+      aria-describedby={describedBy ?? p['aria-describedby']}
+      {...p}
+      className={`${control} ${className}`}
+    >
+      {children}
+    </select>
+  );
+});
+
+/** Two or more mutually exclusive choices shown as large tap targets. Uses real radio inputs, so keyboard and screen readers work natively. */
+export function SegmentedControl<T extends string>({
+  legend,
+  value,
+  onChange,
+  options,
+}: {
+  legend: string;
+  value: T;
+  onChange: (v: T) => void;
+  options: { value: T; label: string }[];
+}) {
+  const name = useId();
+  return (
+    <fieldset className="space-y-2">
+      <legend className="text-sm font-medium text-fg">{legend}</legend>
+      <div className="grid gap-2 sm:grid-cols-2">
+        {options.map((o) => (
+          <label
+            key={o.value}
+            className={`flex min-h-[44px] cursor-pointer items-center gap-3 rounded-md border px-4 py-3 text-sm transition-colors has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-accent ${value === o.value ? 'border-accent bg-accent/10 text-fg' : 'border-line-strong text-muted hover:bg-s2'}`}
+          >
+            <input
+              type="radio"
+              name={name}
+              value={o.value}
+              checked={value === o.value}
+              onChange={() => onChange(o.value)}
+              className="h-4 w-4 accent-[rgb(var(--c-accent))]"
+            />
+            {o.label}
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
+}

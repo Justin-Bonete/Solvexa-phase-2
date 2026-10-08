@@ -7,6 +7,7 @@ import type { FastifyInstance } from 'fastify';
 import { buildApp } from '../../server/app';
 import { loadEnv } from '../../server/env';
 import { ConsoleDevMailer } from '../../server/adapters/mailer';
+import { MemoryStorage } from '../../server/adapters/storage';
 import { schema, type Db } from '../../server/database/client';
 import { hashPassword } from '../../server/services/password.service';
 import { decrypt } from '../../server/utils/crypto';
@@ -30,7 +31,8 @@ export async function makeHarness() {
     await db.insert(schema.roles).values({ name, description: name });
   const env = loadEnv({ ...TEST_ENV });
   const mailer = new ConsoleDevMailer();
-  const app: FastifyInstance = await buildApp({ db, env, mailer });
+  const storage = new MemoryStorage();
+  const app: FastifyInstance = await buildApp({ db, env, mailer, storage });
   await app.ready();
 
   const cookieJar = new Map<string, string>();
@@ -154,6 +156,7 @@ export async function makeHarness() {
     db,
     env,
     mailer,
+    storage,
     client,
     resetRateLimits,
     createUser,

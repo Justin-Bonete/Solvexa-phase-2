@@ -3,11 +3,13 @@ import type { Db } from '../database/client';
 import { schema } from '../database/client';
 import type { Env } from '../env';
 import type { Mailer } from '../adapters/mailer';
-import { MailerError } from '../adapters/mailer';
+import type { Storage } from '../adapters/storage';
 import { AppError, Errors } from '../utils/errors';
 import { randomToken, sha256 } from '../utils/crypto';
 import { burnVerify, hashPassword, verifyPassword } from './password.service';
 import { hit } from './rate-limit.service';
+import { sendMail } from './mail.service';
+import { verifyTurnstile } from './bot.service';
 import { audit } from './audit.service';
 import { createSession, revokeAllForUser, revokeSession, type LoadedSession } from './session.service';
 import { isEnrolled } from './totp.service';
@@ -19,6 +21,7 @@ export type Ctx = {
   db: Db;
   env: Env;
   mailer: Mailer;
+  storage: Storage;
   ipHash: string;
   userAgentHash: string;
   requestId: string;
@@ -27,40 +30,10 @@ export type Ctx = {
 const LOCK_AFTER = 5;
 const TOKEN_TTL: Record<TokenPurpose, number> = { verify_email: 24 * 3_600_000, reset_password: 60 * 60_000 };
 /** Stay under Resend's free 100/day cap so a signup flood cannot silently exhaust it. */
-const DAILY_MAIL_BUDGET = 90;
 
 async function limit(ctx: Ctx, key: string, max: number, windowSec: number) {
   const r = await hit(ctx.db, key, max, windowSec);
   if (!r.allowed) throw Errors.rateLimited(r.retryAfterSec);
-}
-
-async function sendMail(ctx: Ctx, to: string, template: string, subject: string, text: string) {
-  const budget = await hit(ctx.db, 'mail:daily', DAILY_MAIL_BUDGET, 86_400);
-  if (!budget.allowed)
-    throw new AppError(
-      503,
-      'EMAIL_BUDGET_EXHAUSTED',
-      'Email sending is paused for today. Please try again tomorrow.',
-    );
-  try {
-    await ctx.mailer.send({ to, subject, text });
-    await ctx.db
-      .insert(schema.emailOutbox)
-      .values({ toEmail: to, template, status: 'sent', transport: ctx.mailer.name });
-  } catch (e) {
-    await ctx.db.insert(schema.emailOutbox).values({
-      toEmail: to,
-      template,
-      status: 'failed',
-      transport: ctx.mailer.name,
-      error: e instanceof MailerError ? e.message : 'send failed',
-    });
-    throw new AppError(
-      503,
-      'EMAIL_UNAVAILABLE',
-      'The email could not be sent right now. Please try again shortly.',
-    );
-  }
 }
 
 async function issueToken(ctx: Ctx, userId: string, purpose: TokenPurpose): Promise<string> {
@@ -98,19 +71,6 @@ async function findUserByEmail(db: Db, email: string) {
     .innerJoin(schema.roles, eq(schema.roles.id, schema.users.roleId))
     .where(and(eq(schema.users.email, email), isNull(schema.users.deletedAt)));
   return row;
-}
-
-async function verifyTurnstile(env: Env, token: string | undefined, ip: string): Promise<void> {
-  if (!env.REQUIRE_TURNSTILE) return;
-  if (!env.TURNSTILE_SECRET) throw new AppError(503, 'BOT_CHECK_UNAVAILABLE', 'Bot check is not configured.');
-  if (!token) throw new AppError(422, 'BOT_CHECK_FAILED', 'Complete the bot check and try again.');
-  const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ secret: env.TURNSTILE_SECRET, response: token, remoteip: ip }),
-  });
-  const body = (await res.json()) as { success?: boolean };
-  if (!body.success) throw new AppError(422, 'BOT_CHECK_FAILED', 'Bot check failed. Try again.');
 }
 
 export async function toSessionUser(db: Db, s: LoadedSession): Promise<SessionUser> {

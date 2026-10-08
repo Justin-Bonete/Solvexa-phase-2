@@ -51,9 +51,18 @@ describe('CTAs never lie', () => {
     for (const p of ENTRY_PATHS) expect(routeExists(p.to), p.to).toBe(true);
     for (const l of landings) expect(routeExists(l.path), l.path).toBe(true);
   });
-  it('the contact CTAs are disabled until the contact hub exists', () => {
-    expect(routeExists('/contact')).toBe(false);
-    expect(cta['start-project'].enabled).toBe(false);
+  it('the contact and assessment CTAs are live now that their pages exist', () => {
+    expect(routeExists('/contact')).toBe(true);
+    expect(routeExists('/assessment')).toBe(true);
+    expect(cta['start-project']).toMatchObject({ enabled: true, to: '/contact' });
+    expect(cta['request-assessment']).toMatchObject({ enabled: true, to: '/assessment' });
+  });
+  it('only the CTA for an unbuilt feature is still disabled', () => {
+    expect(
+      Object.entries(cta)
+        .filter(([, c]) => !c.enabled)
+        .map(([id]) => id),
+    ).toEqual(['technical-support']);
   });
   it('the landing page that owns #support-plans defines it', () => {
     expect(landings.find((l) => l.slug === 'maintenance')?.supportNote?.id).toBe('support-plans');
@@ -144,6 +153,30 @@ describe('SEO', () => {
   });
   it('home has ProfessionalService data', () => {
     expect(JSON.stringify(jsonLdFor('/', []))).toContain('ProfessionalService');
+  });
+});
+
+describe('sitemap completeness', () => {
+  it('lists every static page that the SEO table marks indexable, and nothing marked noindex', () => {
+    const listed = new Set(indexablePaths(false));
+    const staticIndexable = Object.entries(routeMeta)
+      .filter(([, m]) => m.indexable)
+      .map(([p]) => p);
+    for (const p of staticIndexable)
+      expect(listed.has(p), `${p} is indexable but missing from the sitemap list`).toBe(true);
+    for (const p of listed)
+      if (!p.startsWith('/projects/'))
+        expect(routeMeta[p]?.indexable, `${p} is listed but marked noindex`).toBe(true);
+  });
+  it('prerenders every form page so crawlers and slow phones get real HTML', () => {
+    for (const p of [
+      '/contact',
+      '/contact/new-system',
+      '/contact/existing-system',
+      '/contact/idea',
+      '/assessment',
+    ])
+      expect(prerenderPaths(false)).toContain(p);
   });
 });
 

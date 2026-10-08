@@ -20,9 +20,23 @@ See `.env.example`. Required in production: `DATABASE_URL`, `APP_URL`, `SESSION_
 
 Verify the domain, create an API key, set `MAIL_FROM` to an address on that domain. Free tier limits are 3,000 emails/month and 100/day; the app stops at 90/day and tells the user honestly when sending is paused.
 
+## File uploads (Vercel Blob, private)
+
+Uploaded files are stored privately and are only ever served through the admin API.
+
+1. In Vercel: Storage > Create > Blob, and choose **Private** access. (CLI: `vercel blob create-store solvexa-uploads --access private`.)
+2. Connect the store to the project so `BLOB_READ_WRITE_TOKEN` is added to the function's environment.
+3. Set `STORAGE_DRIVER=blob`.
+
+Limits: 4 MB per file (Vercel caps function request bodies at 4.5 MB), 5 files per request. Locally, `STORAGE_DRIVER=local` writes to `.data/uploads` (outside the web root, git-ignored). Production refuses `local`.
+
+## Testing-only deploys
+
+To try a deploy before Resend and Blob exist, set `ALLOW_DEV_SERVICES=true` and `STORAGE_DRIVER=none`. Then: emails are printed into the Vercel function logs (so you can copy verification links from there), and file uploads fail with a clear message while the request itself still saves. This mode exists for testing only. Remove it before real clients use the site.
+
 ## Turnstile (needs a domain)
 
-Create a site in Cloudflare Turnstile, set `TURNSTILE_SECRET` and `REQUIRE_TURNSTILE=true`. The server-side check is implemented; the browser widget is **not built yet** (Phase 3), so keep `REQUIRE_TURNSTILE=false` until then.
+Create a site in Cloudflare Turnstile, then set `VITE_TURNSTILE_SITE_KEY` (public), `TURNSTILE_SECRET` and `REQUIRE_TURNSTILE=true`. The widget is on the signup form and both intake forms, and the site's CSP already allows Cloudflare. The widget and server check are written to Cloudflare's documentation but have **not been exercised against the live service**; test signup and a form submission after enabling it.
 
 ## Admin recovery
 

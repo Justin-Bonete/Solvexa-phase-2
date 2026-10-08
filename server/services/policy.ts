@@ -5,6 +5,8 @@ type Matrix = Record<string, Partial<Record<RoleName, readonly string[]>>>;
 export const POLICY: Matrix = {
   users: { admin: ['read', 'disable'] },
   activity_logs: { admin: ['read'] },
+  inquiries: { admin: ['read', 'update', 'delete'] },
+  attachments: { admin: ['read'] },
   self: { admin: ['read', 'update'], client: ['read', 'update'] },
 };
 

@@ -4,8 +4,7 @@ import { layers, technologies } from '@content/technologies';
 import type { Faq } from '@content/faqs';
 import type { Testimonial } from '@content/testimonials';
 import { Badge, Card, PlaceholderBadge } from '@/components/ui/Feedback';
-import { Button } from '@/components/ui/Button';
-import { CONTACT_SOON } from '@content/cta';
+import { ButtonLink } from '@/components/ui/Button';
 
 /** The core brand message, in full. */
 export function BrandMessage() {
@@ -154,12 +153,21 @@ export function TestimonialCards({ items }: { items: Testimonial[] }) {
 
 export function ContactPaths() {
   const paths = [
-    { label: 'I Need a New System', text: 'Tell me about the system you want built.' },
     {
+      to: '/contact/new-system',
+      label: 'I Need a New System',
+      text: 'Tell me about the system you want built.',
+    },
+    {
+      to: '/contact/existing-system',
       label: 'I Already Have a System',
       text: 'Maintenance, troubleshooting, modernization, or enhancement.',
     },
-    { label: 'I Have an Idea', text: 'Not sure where to start? We can work it out together.' },
+    {
+      to: '/contact/idea',
+      label: 'I Have an Idea',
+      text: 'Not sure where to start? We can work it out together.',
+    },
   ];
   return (
     <div className="grid gap-4 md:grid-cols-3">
@@ -168,9 +176,9 @@ export function ContactPaths() {
           <h3 className="text-h3">{p.label}</h3>
           <p className="mt-2 text-sm text-muted">{p.text}</p>
           <div className="mt-auto pt-5">
-            <Button variant="secondary" disabledReason={CONTACT_SOON}>
+            <ButtonLink to={p.to} variant="secondary">
               {p.label}
-            </Button>
+            </ButtonLink>
           </div>
         </Card>
       ))}

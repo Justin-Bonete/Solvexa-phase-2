@@ -2,6 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { sql } from 'drizzle-orm';
 import * as auth from '../controllers/auth.controller';
 import * as admin from '../controllers/admin.controller';
+import * as intake from '../controllers/inquiry.controller';
 
 export async function registerRoutes(app: FastifyInstance) {
   await app.register(
@@ -29,6 +30,16 @@ export async function registerRoutes(app: FastifyInstance) {
       api.get('/admin/users', admin.listUsers);
       api.post('/admin/users/:id/disable', admin.disableUser);
       api.get('/admin/activity-logs', admin.listActivity);
+
+      api.post('/inquiries', intake.submitInquiry);
+      api.post('/assessments', intake.submitAssessment);
+      api.post('/inquiries/:id/attachments', { bodyLimit: 5 * 1024 * 1024 }, intake.uploadAttachment);
+
+      api.get('/admin/inquiries', admin.inboxList);
+      api.get('/admin/inquiries/:id', admin.inboxGet);
+      api.patch('/admin/inquiries/:id', admin.inboxUpdate);
+      api.delete('/admin/inquiries/:id', admin.inboxDelete);
+      api.get('/admin/attachments/:id', admin.attachmentDownload);
     },
     { prefix: '/api/v1' },
   );

@@ -80,6 +80,34 @@ export const routeMeta: Record<string, RouteMeta> = {
     'Terms of use (draft)',
     'Terms for using this site and its client accounts. Draft text pending legal review.',
   ),
+  '/contact': m(
+    'Contact',
+    'Contact and start a project',
+    'Tell me what you need: a new system, help with an existing one, or an idea. Choose a path and send your request in a few minutes.',
+  ),
+  '/assessment': m(
+    'System assessment',
+    'Request a system assessment',
+    'Describe your existing system and its problems, and I will review it and tell you what to fix, improve, or modernize first.',
+  ),
+  '/contact/new-system': m(
+    'New system inquiry',
+    'New system inquiry',
+    'Tell me about the system you need built.',
+    false,
+  ),
+  '/contact/existing-system': m(
+    'Existing system inquiry',
+    'Existing system inquiry',
+    'Tell me about the system you already have.',
+    false,
+  ),
+  '/contact/idea': m(
+    'Idea inquiry',
+    'Share your idea',
+    'Describe your idea and we can work out the next step.',
+    false,
+  ),
   '/login': m('Sign in', 'Sign in', 'Sign in to your Solvexa client account.', false),
   '/register': m(
     'Create account',
@@ -114,6 +142,7 @@ export const routeMeta: Record<string, RouteMeta> = {
 export function metaFor(path: string): RouteMeta {
   const hit = routeMeta[path];
   if (hit) return hit;
+  if (path.startsWith('/admin')) return routeMeta['/admin']!;
   const slug = path.match(/^\/projects\/([\w-]+)$/)?.[1];
   const project = slug ? projects.find((p) => p.slug === slug) : undefined;
   if (project) {

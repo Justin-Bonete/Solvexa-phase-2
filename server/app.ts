@@ -1,6 +1,8 @@
 import Fastify, { type FastifyError } from 'fastify';
 import cookie from '@fastify/cookie';
 import helmet from '@fastify/helmet';
+import multipart from '@fastify/multipart';
+import { MAX_FILE_BYTES } from '../shared/uploads';
 import { ZodError } from 'zod';
 import { registerSecurity, type Deps } from './middleware/security';
 import { registerRoutes } from './routes';
@@ -32,6 +34,7 @@ export async function buildApp(deps: Deps) {
     crossOriginResourcePolicy: { policy: 'same-origin' },
     referrerPolicy: { policy: 'no-referrer' },
   });
+  await app.register(multipart, { limits: { fileSize: MAX_FILE_BYTES, files: 1, fields: 4, parts: 6 } });
   registerSecurity(app, deps);
 
   app.setErrorHandler((err: FastifyError | AppError | ZodError, req, reply) => {

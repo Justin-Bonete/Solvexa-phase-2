@@ -7,7 +7,7 @@ export const mainNav: NavItem[] = [
   { label: 'Projects', to: '/projects', enabled: true },
   { label: 'Process', to: '/process', enabled: true },
   { label: 'About', to: '/about', enabled: true },
-  { label: 'Contact', to: '/contact', enabled: false }, // Phase 3
+  { label: 'Contact', to: '/contact', enabled: true },
 ];
 
 export const footerGroups: { title: string; items: NavItem[] }[] = [

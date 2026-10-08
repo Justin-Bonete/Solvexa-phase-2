@@ -9,10 +9,12 @@ import { applyApiError } from '@/features/auth/forms';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Feedback';
 import { Checkbox, FormField, Input } from '@/components/ui/Form';
+import { Turnstile } from '@/components/ui/Turnstile';
 
 export default function Register() {
   const [done, setDone] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [botToken, setBotToken] = useState<string | undefined>();
   const {
     register,
     handleSubmit,
@@ -23,7 +25,10 @@ export default function Register() {
   const onSubmit = handleSubmit(async (values) => {
     setFormError(null);
     try {
-      const r = await api.post<{ message: string }>('/auth/register', values);
+      const r = await api.post<{ message: string }>('/auth/register', {
+        ...values,
+        ...(botToken ? { turnstileToken: botToken } : {}),
+      });
       setDone(values.email); // shown only after the server accepted the request
       void r;
     } catch (e) {
@@ -101,6 +106,7 @@ export default function Register() {
           error={errors.consent?.message}
           {...register('consent')}
         />
+        <Turnstile onToken={setBotToken} />
         <Button type="submit" loading={isSubmitting}>
           Create account
         </Button>

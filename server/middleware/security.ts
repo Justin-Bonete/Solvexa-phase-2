@@ -3,12 +3,13 @@ import { randomUUID } from 'node:crypto';
 import type { Db } from '../database/client';
 import type { Env } from '../env';
 import type { Mailer } from '../adapters/mailer';
+import type { Storage } from '../adapters/storage';
 import { hmac, randomToken, safeEqual, sha256 } from '../utils/crypto';
 import { AppError, Errors } from '../utils/errors';
 import { loadSession } from '../services/session.service';
 import { can } from '../services/policy';
 
-export type Deps = { db: Db; env: Env; mailer: Mailer };
+export type Deps = { db: Db; env: Env; mailer: Mailer; storage: Storage };
 
 export const cookieNames = (env: Env) =>
   env.isProd ? { sid: '__Host-sid', anon: '__Host-csrf' } : { sid: 'sid', anon: 'csrf' };
@@ -41,7 +42,7 @@ export function csrfTokenFor(req: FastifyRequest, reply: FastifyReply, env: Env)
   return anonCsrfToken(env, v);
 }
 
-export function registerSecurity(app: FastifyInstance, { db, env, mailer }: Deps) {
+export function registerSecurity(app: FastifyInstance, { db, env, mailer, storage }: Deps) {
   const names = cookieNames(env);
   const appOrigin = new URL(env.APP_URL).origin;
 
@@ -56,6 +57,7 @@ export function registerSecurity(app: FastifyInstance, { db, env, mailer }: Deps
       db,
       env,
       mailer,
+      storage,
       ipHash: hmac(env.SESSION_SECRET, `ip:${req.ip}`).slice(0, 32),
       userAgentHash: sha256(String(req.headers['user-agent'] ?? '')).slice(0, 32),
       requestId: String(req.headers['x-request-id'] ?? randomUUID()),

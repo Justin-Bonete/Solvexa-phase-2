@@ -1,4 +1,4 @@
-# Security notes (Phase 1)
+# Security notes (through Phase 3)
 
 | Control                | Implementation                                                                                                                                                      | Verified by                                        |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
@@ -13,6 +13,19 @@
 | Headers                | Helmet on the API; CSP and security headers for the site in `vercel.json`                                                                                           | API header test; site headers **not yet verified** |
 | Audit log              | Auth events and admin actions, no secrets                                                                                                                           | Audit test                                         |
 
-## Not done in Phase 1 (do not assume these exist)
+## Intake and uploads (Phase 3)
 
-Uploads and malware scanning (Phase 3), breached-password check, cross-instance burst-proof rate limiting (fixed windows allow a burst at a boundary), scheduled purge of expired sessions and rate-limit rows, browser Turnstile widget, DB-level append-only grant on `activity_logs` (documented, not automated), browser-level tests.
+| Control              | Implementation                                                                                                                                                | Verified by                                                                                                  |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Public form abuse    | CSRF on anonymous POSTs, per-IP limits (5/hour, 20/day), honeypot, minimum fill time, optional Turnstile, idempotency keys                                    | Server tests: bots get no reference and no row; 6th request is 429; duplicate key returns the same reference |
+| Upload validation    | Extension allowlist, size cap, content verified by magic bytes (`file-type`); text files must be clean UTF-8; SVG, HTML, archives and executables are refused | Tests with spoofed PE, PDF-as-PNG, fake DOCX, NUL-byte text, SVG                                             |
+| Upload authorization | Short-lived HMAC token bound to one saved request; per-IP upload limit; max 5 files                                                                           | Tests for missing, forged, expired, and other-request tokens                                                 |
+| Storage              | Random keys, no overwrite, private store, outside the web root, safe-key allowlist                                                                            | Storage tests incl. traversal keys and file mode                                                             |
+| Serving files        | Admin-only, TOTP-verified; `Content-Disposition: attachment`, `nosniff`, sandbox CSP; every download audited                                                  | Download test with hostile filenames                                                                         |
+| Email                | Plain text only; subjects stripped of control characters; failures recorded and surfaced; daily budget guard                                                  | Injection and failure tests                                                                                  |
+| Inbox rendering      | Visitor text rendered as text (React escaping); system URLs shown but never linked                                                                            | Admin UI test with script/HTML payloads                                                                      |
+| Credentials          | Assessment access is yes/no/unsure only; unknown fields are rejected; warning shown on every relevant form                                                    | Schema and UI tests                                                                                          |
+
+## Not done (do not assume these exist)
+
+Malware scanning of uploads (files are marked "Not scanned" and the admin UI says so), breached-password check, real-device and real-browser verification, the Blob driver and Turnstile against their live services, cross-instance burst-proof rate limiting (fixed windows allow a burst at a boundary), scheduled purge of expired sessions and rate-limit rows, browser Turnstile widget, DB-level append-only grant on `activity_logs` (documented, not automated), browser-level tests.

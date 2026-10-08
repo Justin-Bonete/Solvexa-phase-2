@@ -2,7 +2,7 @@
 
 Marketing site and client platform for an independent software developer. React + Vite + Tailwind v4 (client), Fastify (API, runs as a Vercel serverless function), PostgreSQL via Drizzle.
 
-**Status: Phase 2 (Public site) complete.** Intake forms, chat, tickets, and the full portal and admin screens arrive in Phases 3 to 5. Unbuilt destinations are visibly disabled, never fake. See `docs/content.md` for how to add your real content.
+**Status: Phase 3 (Intake) complete.** The contact hub, inquiry and assessment forms, uploads, email notifications and the admin inbox work. Chat, tickets, and the full portal and admin screens arrive in Phases 4 and 5. Unbuilt destinations are visibly disabled, never fake. See `docs/content.md` for how to add your real content.
 
 ## Run locally
 
@@ -38,6 +38,7 @@ With `MAIL_TRANSPORT=console`, verification and reset emails are printed in the 
 
 ## Documentation
 
+- `docs/phase-3-checklist.md`: step-by-step manual test of the intake flow
 - `docs/content.md`: where each piece of content lives and how placeholders work
 - `docs/setup.md`: Neon, Vercel, Resend, Turnstile setup and env vars
 - `docs/security.md`: controls, what is verified, what is not

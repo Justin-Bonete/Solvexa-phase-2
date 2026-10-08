@@ -15,8 +15,17 @@ const CONTENT_PAGES = [
   '/faq',
   '/privacy',
   '/terms',
+  '/contact',
+  '/assessment',
 ];
-const AUTH_PAGES = ['/login', '/register', '/forgot-password'];
+const AUTH_PAGES = [
+  '/login',
+  '/register',
+  '/forgot-password',
+  '/contact/new-system',
+  '/contact/existing-system',
+  '/contact/idea',
+];
 
 /** Pages listed in the sitemap. Placeholder projects are excluded when placeholders are hidden. */
 export const indexablePaths = (hide = siteConfig.hidePlaceholders) => [
